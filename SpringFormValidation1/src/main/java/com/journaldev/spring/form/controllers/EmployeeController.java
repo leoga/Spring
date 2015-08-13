@@ -159,7 +159,7 @@ public class EmployeeController {
     
 	/**
 	 * Validates the changes and if they are correct 
-	 * redirects to employee's personal page
+	 * redirects to employee's personal page, need login
 	 * <p>
 	 * @param employee the introduced changes collected by the form
 	 * @param bindingResult necessary in order to validate the employee
@@ -177,6 +177,7 @@ public class EmployeeController {
     
 	/**
 	 * Return a form in order to add a related customer (with currentEmployee) to the DB
+	 * need login
 	 * <p>
 	 * @param model necessary in order to update data from/to jsp page
 	 */
@@ -188,6 +189,7 @@ public class EmployeeController {
     
 	/**
 	 * Validates the customer and redirects to employee personal page
+	 * need employee login
 	 * <p>
 	 * @param customer the customer data collected by the form
 	 * @param bindingResult necessary in order to validate the customer
@@ -207,6 +209,7 @@ public class EmployeeController {
     
 	/**
 	 * Return a form in order to modify a related customer (with currentEmployee) in the DB
+	 * need employee login
 	 * <p>
 	 * @param searchById an string with the ID of the customer we choose to modify
 	 * @param model necessary in order to update data from/to jsp page
@@ -222,6 +225,7 @@ public class EmployeeController {
     
 	/**
 	 * Validates the customer and redirects to "mycustomers" page if it's correct
+	 * need employee login
 	 * <p>
 	 * @param customer the customer data collected by the form
 	 * @param bindingResult necessary in order to validate the customer	 
@@ -237,7 +241,7 @@ public class EmployeeController {
   }
     
 	/**
-	 * Delete the customer we choose
+	 * Delete the customer we choose, need employee login
 	 * <p>
 	 * @param searchById an string with the ID of the customer we choose to delete	 
 	 * @param model necessary in order to update data from/to jsp page
@@ -249,7 +253,7 @@ public class EmployeeController {
     }
     
 	/**
-	 * List the customers related with the currentEmployee
+	 * List the customers related with the currentEmployee, need employee login
 	 * <p>
 	 * @param start value needed in order to paginate the result
 	 * @param model necessary in order to update data from/to jsp page
