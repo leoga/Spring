@@ -24,10 +24,12 @@ import com.journaldev.spring.form.service.CustomerService;
  * Core test
  * <p>
  */
+/*"file:src/main/webapp/WEB-INF/spring/datasource-MySQL.xml",
+"file:src/main/webapp/WEB-INF/spring/spring.xml"*/
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {
-    "file:src/main/webapp/WEB-INF/spring/datasource-MySQL.xml",
-	"file:src/main/webapp/WEB-INF/spring/spring.xml"
+		"classpath:/META-INF/datasource-MySQL.xml",
+		"classpath:/META-INF/spring.xml"
 })
 public class ServiceFacadeTest {
 	
