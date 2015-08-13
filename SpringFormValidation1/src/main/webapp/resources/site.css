@@ -1,0 +1,158 @@
+body {font-family: Arial, Comic Sans, sans-serif;}
+
+html, body {
+  background: #1e5799; /* Old browsers */
+  background: -moz-linear-gradient(top,  #1e5799 0%, #207cca 30%, #2989d8 50%, #7db9e8 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#1e5799), color-stop(30%,#207cca), color-stop(50%,#2989d8), color-stop(100%,#7db9e8)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #1e5799 0%,#207cca 30%,#2989d8 50%,#7db9e8 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #1e5799 0%,#207cca 30%,#2989d8 50%,#7db9e8 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #1e5799 0%,#207cca 30%,#2989d8 50%,#7db9e8 100%); /* IE10+ */
+  background: linear-gradient(to bottom,  #1e5799 0%,#207cca 30%,#2989d8 50%,#7db9e8 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1e5799', endColorstr='#7db9e8',GradientType=0 ); /* IE6-9 */ 
+  height:100%;
+}
+
+#wrapper {
+	 border: 5px #d1d0cd solid;  
+	 border-radius: 6px;  
+	 box-shadow: 0 0 35px #000000;
+	 margin-top: 40px; 
+}
+
+#wrapp {
+	margin-left: 10px;
+}
+
+#searchbut {
+	border: 1px #000000 solid;
+	box-shadow: 0 0 5px #444444;
+	margin-left: 10px;
+}
+
+#refreshbut {
+	border: 1px #000000 solid;
+	box-shadow: 0 0 5px #444444;
+	margin-right: 2px;
+}
+
+#logbox {
+	 border: 5px #d1d0cd solid;  
+	 border-radius: 6px;  
+	 box-shadow: 0 0 35px #000000;
+	 margin-top: 150px; 
+}
+
+#custwrapp {
+	 border: 5px #d1d0cd solid;  
+	 border-radius: 6px;  
+	 box-shadow: 0 0 35px #000000;
+}
+
+#addcustbut {
+	border: 1px #000000 solid;
+	box-shadow: 0 0 5px #444444;
+	margin-right: 10px;
+}
+
+#navbut {
+	border: 1px #000000 solid;
+	box-shadow: 0 0 5px #444444;
+	margin-right: 10px;
+	margin-left: 10px;
+	marign-top: 5px;
+	width: 10%;
+}
+
+#degrace {
+  background-color: #d1d0cd; /* fallback color, place your own */ /* Gradients for modern browsers, replace as you see fit */ 
+  background-image: -moz-linear-gradient(left, #f2f2f2, #ffffff); 
+  background-image: -ms-linear-gradient(left, #f2f2f2, #ffffff); 
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f2f2f2), to(#ffffff)); 
+  background-image: -webkit-linear-gradient(left, #f2f2f2, #ffffff); 
+  background-image: -o-linear-gradient(left, #f2f2f2, #ffffff); 
+  background-image: linear-gradient(to right, #f2f2f2, #ffffff); 
+  background-repeat: repeat-x; /* IE8-9 gradient filter */ 
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2f2f2', endColorstr='#ffffff', GradientType=1);
+  box-shadow: 0 2px 5px #000000; 
+  padding-top: 10px;
+  margin-bottom: 0px;
+}
+
+#stronger{
+	font-weight:bold;
+	color: black;
+}
+
+.trashbut {
+	border: 1px #000000 solid;
+	box-shadow: 0 0 5px #444444;
+	margin-left: 10px;
+}
+
+.modifybut {
+	border: 1px #000000 solid;
+	box-shadow: 0 0 5px #444444;
+	margin-left: 10px;
+}
+
+.addbut {
+	border: 1px #000000 solid;
+	box-shadow: 0 0 5px #444444;
+	margin-left: 10px;
+}
+
+.panel-right{
+  color: gray;
+  margin-top: -0.2em;
+  padding: 0.3em;
+  float: right;	
+}
+
+.page-right{
+	 float: right;
+	 margin-top: -0.2em;
+	 margin-right: 10px;	
+}
+.pagination {
+	margin-top: 0px !important;
+	margin-right: 30px;
+	margin-bottom: 0px !important;
+	box-shadow: 0 0 5px #444444;
+}
+
+
+.show{
+	
+}
+
+.rows{
+	margin-top: 10px;
+}
+
+.navbar {
+  margin-bottom: 0px !important;
+  padding-left: 20px;
+  font-weight:bold;
+}
+
+.formlarge{
+	width: 20%;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+.form-size{
+	width: 10%;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+.error {
+	color: #ff0000;
+	font-style: italic;
+	font-weight: bold;
+}
+
+.h5{
+	padding-top: 25px;
+}
