@@ -190,20 +190,6 @@ public class ServiceFacade {
 	}
 	
     /**
-     * Used for test, add an employee to DB
-     * <p>
-     * @param employee employee to add
-     
-	public void addEmployeeTest(final Employee employee) throws NoSuchAlgorithmException, UnsupportedEncodingException{
-		LOGGER.info(employee.getPassword());
-		final Login log = new Login();
-		final String password = employee.getPassword();
-		employee.setPassword(log.returnedHash(password));
-		LOGGER.info(employee.getPassword());
-		employees.addEmployee(employee);
-	}*/
-	
-    /**
      * Creates a new Customer
      * <p>
      * @param customer data collected by the form

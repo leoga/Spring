@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.journaldev.spring.form.facade.ServiceFacade;
 import com.journaldev.spring.form.login.Login;
 import com.journaldev.spring.form.model.Customer;
+import com.journaldev.spring.form.model.Employee;
 
 
 
@@ -135,7 +136,11 @@ public class CustomerController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "/cust/personalPage")
-    public String getPersonalPage(final Model model){
+    public String getPersonalPage(final Model model, final HttpSession session){
+        final Employee currentCustomer = this.getCurrentCustomer(session);
+        if (null == currentCustomer) {
+        	return "redirect:loginEmp";
+        }
     	model.addAttribute("customerDB", currentCustomer);
     	return "customerPage";
     }
@@ -148,8 +153,12 @@ public class CustomerController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "/cust/edit")
-    public String editCustomerAction(final Model model){
+    public String editCustomerAction(final Model model, final HttpSession session){
     	LOGGER.info("Returning customerPage-edit.jsp");
+        final Employee currentCustomer = this.getCurrentCustomer(session);
+        if (null == currentCustomer) {
+        	return "redirect:loginEmp";
+        }
     	model.addAttribute("customerGET", currentCustomer);
     	return "customerPage-edit";
     }
@@ -173,49 +182,57 @@ public class CustomerController {
   }
  
 //NOT CONTROLLERS
-/**
-* Set format "dd/MM/yyyy" to the introduced dates
-* <p>
-*/
-@InitBinder
-public void binderC(final WebDataBinder binder) {
-	 binder.registerCustomEditor(Date.class, new PropertyEditorSupport() {
-		 
-		/**
-		* Default locale
-		*/
-		Locale locale = Locale.getDefault();
-		/**
-		* Set format "dd/MM/yyyy" to the introduced dates
-		* <p>
-		*/
-		public void setAsText(final String value) {
-			try {
-				setValue(new SimpleDateFormat("yyyy-MM-dd", locale).parse(value));
-			} catch (ParseException e) {
-				//e.printStackTrace();
-				LOGGER.info(e.getMessage());
-				setValue(null);
+    
+	/**
+	* Return current customer
+	*/
+    private Employee getCurrentCustomer(final HttpSession ses) {
+    	return (Employee) ses.getAttribute("currentUser");
+    }
+    
+	/**
+	* Set format "dd/MM/yyyy" to the introduced dates
+	* <p>
+	*/
+	@InitBinder
+	public void binderC(final WebDataBinder binder) {
+		 binder.registerCustomEditor(Date.class, new PropertyEditorSupport() {
+			 
+			/**
+			* Default locale
+			*/
+			Locale locale = Locale.getDefault();
+			/**
+			* Set format "dd/MM/yyyy" to the introduced dates
+			* <p>
+			*/
+			public void setAsText(final String value) {
+				try {
+					setValue(new SimpleDateFormat("yyyy-MM-dd", locale).parse(value));
+				} catch (ParseException e) {
+					//e.printStackTrace();
+					LOGGER.info(e.getMessage());
+					setValue(null);
+				}
+			    
 			}
-		    
+			/**
+			* Set format "dd/MM/yyyy" to the introduced dates
+			* <p>
+			*/
+			public String getAsText() {
+				if (getValue()==null){
+			    return "";	
+			}
+			 else{
+				 return new SimpleDateFormat("dd/MM/yyyy", locale).format((Date) getValue());
+			    }
+			}        
+	
+			});
 		}
-		/**
-		* Set format "dd/MM/yyyy" to the introduced dates
-		* <p>
-		*/
-		public String getAsText() {
-			if (getValue()==null){
-		    return "";	
-		}
-		 else{
-			 return new SimpleDateFormat("dd/MM/yyyy", locale).format((Date) getValue());
-		    }
-		}        
-
-		});
+	
 	}
-
-}
 
 
 

@@ -158,10 +158,6 @@ public class EmployeeController {
     	return "employeePage";
     }
     
-    private Employee getCurrentEmployee(final HttpSession ses) {
-    	return (Employee) ses.getAttribute("currentUser");
-    }
-    
 	/**
 	 * Allow to update the employee's personal information
 	 * It returns a form in order to edit the data
@@ -173,6 +169,9 @@ public class EmployeeController {
     public String editEmployeeAction(final Model model, final HttpSession session){
     	LOGGER.info("Returning customerPage-edit.jsp");
     	final Employee currentEmployee = this.getCurrentEmployee(session);
+    	if (null == currentEmployee) {
+    		return "redirect:loginEmp";
+    	}
     	model.addAttribute("employeeGET", currentEmployee);
     	return "employeePage-edit";
     }
@@ -190,7 +189,7 @@ public class EmployeeController {
    	 if(bindingresult.hasErrors()){
    		 return "employeePage-edit";
    	}
-   	final Employee currentEmployee = facade.updateEmployee(employee);
+ 	final Employee currentEmployee = this.getCurrentEmployee(session);
    	session.setAttribute("currentUser", currentEmployee);
    	model.addAttribute("employeeDB", currentEmployee);
   	return "employeePage";
@@ -203,7 +202,11 @@ public class EmployeeController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "add-customer")
-    public String addCustomerGet(final Model model) {
+    public String addCustomerGet(final Model model, HttpSession session) {
+    final Employee currentEmployee = this.getCurrentEmployee(session);
+    if (null == currentEmployee) {
+    	return "redirect:loginEmp";
+    }
     model.addAttribute("customer", new Customer());
     return "add-customer";
     }
@@ -222,12 +225,12 @@ public class EmployeeController {
     if(bindingresult.hasErrors()){
        		 return "add-customer";
        }    	
-    	LOGGER.info("Returning employeePage.jsp page");
-        final Employee currentEmployee = this.getCurrentEmployee(session);
-        facade.createCustomer(customer, currentEmployee.getId());
-        model.addAttribute("employeeDB", currentEmployee);
-        return "employeePage";
-    }
+    final Employee currentEmployee = this.getCurrentEmployee(session);
+    LOGGER.info("Returning employeePage.jsp page");
+    facade.createCustomer(customer, currentEmployee.getId());
+    model.addAttribute("employeeDB", currentEmployee);
+    return "employeePage";
+}
     
 	/**
 	 * Return a form in order to modify a related customer 
@@ -237,10 +240,13 @@ public class EmployeeController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "/modify")
-    public String modifyCustomerAction(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model){
-    	Customer customerDB;
+    public String modifyCustomerAction(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model, final HttpSession session){
     	LOGGER.info("Returning modifyCustomer.jsp");
-    	customerDB = facade.getCustomerDB(searchById);
+        final Employee currentEmployee = this.getCurrentEmployee(session);
+        if (null == currentEmployee) {
+        	return "redirect:loginEmp";
+        }
+    	Customer customerDB = facade.getCustomerDB(searchById);
     	model.addAttribute("customerGET", customerDB);
     	return "modifyCustomer";
     }
@@ -269,7 +275,11 @@ public class EmployeeController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public String deletePost(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model) {
+    public String deletePost(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model, final HttpSession session) {
+        final Employee currentEmployee = this.getCurrentEmployee(session);
+        if (null == currentEmployee) {
+        	return "redirect:loginEmp";
+        }
     	facade.deleteCustomers(searchById);
 	   	return "redirect:mycustomers?page="+pagelist;
     }
@@ -285,6 +295,9 @@ public class EmployeeController {
     public String showMyCustomers(@RequestParam(value="page") final int start, final Model model, final HttpSession session){
     	LOGGER.info("Returning mycustomers.jsp page");
     	final Employee currentEmployee = this.getCurrentEmployee(session);
+        if (null == currentEmployee) {
+        	return "redirect:loginEmp";
+        }
     	final Object[] array= facade.getCustomersbyID(start, currentEmployee);
     	final int pages = (int) array[0];
     	final List<Customer> customerDB = (List<Customer>) array[1];
@@ -309,6 +322,9 @@ public class EmployeeController {
 	@RequestMapping(value = "search", method = RequestMethod.GET)
     public String getSearch(@RequestParam(value="page") final int start, final Model model, final HttpSession session){
     	final Employee currentEmployee = this.getCurrentEmployee(session);
+        if (null == currentEmployee) {
+        	return "redirect:loginEmp";
+        }
     	if(getpost){
     	    if(sfields.getBydatehigh()!=null && sfields.getBydatelow()!=null){
     	    	final Timestamp[] dates = facade.timestampConverter(sfields.getBydatehigh(), sfields.getBydatelow());
@@ -371,8 +387,12 @@ public class EmployeeController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "/modifys")
-    public String modifyCustomerSearchAction(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model){
+    public String modifyCustomerSearchAction(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model, final HttpSession session){
     	LOGGER.info("Returning modifyCustomer.jsp");
+        final Employee currentEmployee = this.getCurrentEmployee(session);
+        if (null == currentEmployee) {
+        	return "redirect:loginEmp";
+        }
     	final Customer customerDB = facade.getCustomerDB(searchById);
     	model.addAttribute("customerGET", customerDB);
     	return "modifyCustomer";
@@ -404,7 +424,11 @@ public class EmployeeController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "/deletes", method = RequestMethod.POST)
-    public String deleteSearchPost(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model) {
+    public String deleteSearchPost(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model, HttpSession session) {
+        final Employee currentEmployee = this.getCurrentEmployee(session);
+        if (null == currentEmployee) {
+        	return "redirect:loginEmp";
+        }
     	facade.deleteCustomers(searchById);
 	   	return "redirect:search?page="+pagesearchlist;
     }
@@ -412,44 +436,52 @@ public class EmployeeController {
 
     
 //NOT CONTROLLERS
-/**
-* Set format "dd/MM/yyyy" to the introduced dates
-*/
-@InitBinder
-public void binder(final WebDataBinder binder) {
-	binder.registerCustomEditor(Date.class, new PropertyEditorSupport() {
-		
-		/**
-		* Default locale
-		*/
-		Locale locale = Locale.getDefault();
-		
-		/**
-		* Set format "dd/MM/yyyy" to the introduced dates
-		*/
-   		public void setAsText(final String value) {
-   			try {
-   				setValue(new SimpleDateFormat("yyyy-MM-dd", locale).parse(value));
-   			} catch (ParseException e) {
-   				//e.printStackTrace();
-   				LOGGER.info(e.getMessage());
-   				setValue(null);
-   			}
-   		    
-   		}
-   		/**
-	   	* Set format "dd/MM/yyyy" to the introduced dates
-	   	*/
-   		public String getAsText() {
-   		    if (getValue()==null){
-   		    	return "";
-   		   	}
-   		   	else{
-   		    	return new SimpleDateFormat("dd/MM/yyyy", locale).format((Date) getValue());	
-   		    }
-   		}        
-
-   		});
-    }    
+    
+	/**
+	* Return current employee
+	*/
+    private Employee getCurrentEmployee(final HttpSession ses) {
+    	return (Employee) ses.getAttribute("currentUser");
+    }
+    
+	/**
+	* Set format "dd/MM/yyyy" to the introduced dates
+	*/
+	@InitBinder
+	public void binder(final WebDataBinder binder) {
+		binder.registerCustomEditor(Date.class, new PropertyEditorSupport() {
+			
+			/**
+			* Default locale
+			*/
+			Locale locale = Locale.getDefault();
+			
+			/**
+			* Set format "dd/MM/yyyy" to the introduced dates
+			*/
+	   		public void setAsText(final String value) {
+	   			try {
+	   				setValue(new SimpleDateFormat("yyyy-MM-dd", locale).parse(value));
+	   			} catch (ParseException e) {
+	   				//e.printStackTrace();
+	   				LOGGER.info(e.getMessage());
+	   				setValue(null);
+	   			}
+	   		    
+	   		}
+	   		/**
+		   	* Set format "dd/MM/yyyy" to the introduced dates
+		   	*/
+	   		public String getAsText() {
+	   		    if (getValue()==null){
+	   		    	return "";
+	   		   	}
+	   		   	else{
+	   		    	return new SimpleDateFormat("dd/MM/yyyy", locale).format((Date) getValue());	
+	   		    }
+	   		}        
+	
+	   		});
+	    }    
 }
 
