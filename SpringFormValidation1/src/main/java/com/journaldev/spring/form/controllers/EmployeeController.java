@@ -189,7 +189,7 @@ public class EmployeeController {
    	 if(bindingresult.hasErrors()){
    		 return "employeePage-edit";
    	}
- 	final Employee currentEmployee = this.getCurrentEmployee(session);
+ 	final Employee currentEmployee = facade.updateEmployee(employee);
    	session.setAttribute("currentUser", currentEmployee);
    	model.addAttribute("employeeDB", currentEmployee);
   	return "employeePage";
