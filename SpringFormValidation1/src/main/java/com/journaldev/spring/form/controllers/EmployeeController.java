@@ -202,7 +202,7 @@ public class EmployeeController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "add-customer")
-    public String addCustomerGet(final Model model, HttpSession session) {
+    public String addCustomerGet(final Model model, final HttpSession session) {
     final Employee currentEmployee = this.getCurrentEmployee(session);
     if (null == currentEmployee) {
     	return "redirect:loginEmp";
@@ -246,7 +246,7 @@ public class EmployeeController {
         if (null == currentEmployee) {
         	return "redirect:loginEmp";
         }
-    	Customer customerDB = facade.getCustomerDB(searchById);
+    	final Customer customerDB = facade.getCustomerDB(searchById);
     	model.addAttribute("customerGET", customerDB);
     	return "modifyCustomer";
     }
@@ -424,7 +424,7 @@ public class EmployeeController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = "/deletes", method = RequestMethod.POST)
-    public String deleteSearchPost(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model, HttpSession session) {
+    public String deleteSearchPost(@ModelAttribute("ArrayID") final SearchFields searchById, final Model model, final HttpSession session) {
         final Employee currentEmployee = this.getCurrentEmployee(session);
         if (null == currentEmployee) {
         	return "redirect:loginEmp";

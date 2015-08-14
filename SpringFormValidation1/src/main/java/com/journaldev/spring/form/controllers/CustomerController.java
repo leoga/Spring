@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.journaldev.spring.form.facade.ServiceFacade;
 import com.journaldev.spring.form.login.Login;
 import com.journaldev.spring.form.model.Customer;
-import com.journaldev.spring.form.model.Employee;
-
 
 
 /**
@@ -40,11 +38,7 @@ public class CustomerController {
      */
     @Autowired
     private ServiceFacade facade; 
-    /**
-     * Used in order to show data of the current logged customer
-     * <p>
-     */
-    private Customer currentCustomer;
+
     /**
      * Controller LOGGER 
      * <p>
@@ -137,7 +131,7 @@ public class CustomerController {
 	 */
     @RequestMapping(value = "/cust/personalPage")
     public String getPersonalPage(final Model model, final HttpSession session){
-        final Employee currentCustomer = this.getCurrentCustomer(session);
+        final Customer currentCustomer = this.getCurrentCustomer(session);
         if (null == currentCustomer) {
         	return "redirect:loginEmp";
         }
@@ -155,7 +149,7 @@ public class CustomerController {
     @RequestMapping(value = "/cust/edit")
     public String editCustomerAction(final Model model, final HttpSession session){
     	LOGGER.info("Returning customerPage-edit.jsp");
-        final Employee currentCustomer = this.getCurrentCustomer(session);
+        final Customer currentCustomer = this.getCurrentCustomer(session);
         if (null == currentCustomer) {
         	return "redirect:loginEmp";
         }
@@ -176,7 +170,7 @@ public class CustomerController {
    	 if(bindingResult.hasErrors()){
    		 return "customerPage-edit";
    }
-   	facade.updateCustomerInfo(customer);
+   	final Customer currentCustomer = facade.updateCustomerInfo(customer);
     model.addAttribute("customerDB", currentCustomer);
   	return "customerPage";
   }
@@ -186,8 +180,8 @@ public class CustomerController {
 	/**
 	* Return current customer
 	*/
-    private Employee getCurrentCustomer(final HttpSession ses) {
-    	return (Employee) ses.getAttribute("currentUser");
+    private Customer getCurrentCustomer(final HttpSession ses) {
+    	return (Customer) ses.getAttribute("currentUser");
     }
     
 	/**

@@ -126,9 +126,18 @@ public class ServiceFacade {
      * <p>
      * @param form data collected by the form
      */
-	public void updateCustomerInfo(final Customer form){
-		
-		final Customer currentCustomer = customers.getCustomerbyId(form.getId()).get(0);
+	public Customer updateCustomerInfo(final Customer form){
+		Customer currentCustomer;
+		List<Customer> customerLog = customers.getCustomerbyId(form.getId());
+		if(customerLog.isEmpty()){
+			customerLog = customers.getCustomerLogin(form.getUser());
+			if(customerLog.isEmpty()){
+				return null;
+			}
+			currentCustomer = customerLog.get(0);
+		}else{
+			currentCustomer = customerLog.get(0);
+		}
 		currentCustomer.setUser(form.getUser());
 		currentCustomer.setName(form.getName());
 		currentCustomer.setAge(form.getAge());
@@ -136,6 +145,8 @@ public class ServiceFacade {
 		currentCustomer.setEmail(form.getEmail());
 		currentCustomer.setPhone(form.getPhone());
 	    customers.updateCustomer(currentCustomer);
+	    
+	    return customers.getCustomerLogin(currentCustomer.getUser()).get(0);
 	}
 	
     /**
