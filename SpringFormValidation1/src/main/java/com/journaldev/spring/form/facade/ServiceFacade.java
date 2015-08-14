@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 import com.journaldev.spring.form.login.Login;
 import com.journaldev.spring.form.model.Customer;
 import com.journaldev.spring.form.model.Employee;
@@ -36,32 +35,7 @@ public class ServiceFacade {
      */
 	@Autowired
 	private EmployeeService employees;
-    /**
-     * Necessary in order to modify customers
-     * <p>
-     */
-	private Customer modifyCustomer;
-    /**
-     * Necessary for Employee session
-     * <p>
-     */
-	private Employee currentEmployee;
-    /**
-     * Necessary for Customer session
-     * <p>
-     */
-	private Customer currentCustomer;
 
-    /**
-     * Used for searchfields
-     * <p>
-     */
-    private Timestamp[] dates;
-    /**
-     * True if login success, false if fails
-     * <p>
-     */
-    private boolean login;
     /**
      * ServiceFacade LOGGER
      * <p>
@@ -69,62 +43,37 @@ public class ServiceFacade {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceFacade.class);
     
     /**
-     * Getter for login
-     * <p>
-     */
-    public boolean isLogin() {
-		return login;
-	}
-    
-    /**
-     * Getter for currentEmployee
-     * <p>
-     */
-    public Employee getCurrentEmployee() {
-		return currentEmployee;
-	}
-    
-    /**
-     * Getter for currentCustomer
-     * <p>
-     */
-    public Customer getCurrentCustomer() {
-		return currentCustomer;
-	}
-    
-    /**
      * List the results by sfields
      * <p>
      * @param modDel search fields for the query
      * @param model necessary in order to update data from/to the jsp page
      * @param start necessary for pagination
+     * @param currentEmployee necessary for query
      */
-	public void search(final SearchFields modDel, final Model model, final int start){
-		SearchFields sfields= modDel;
+	public Object[] search(final SearchFields modDel, final int start, final Employee currentEmployee){
+		final SearchFields sfields= modDel;
 	    if(sfields!=null){
 	      	 if(sfields.getByname()!=null && sfields.getByagehigh()==0 && sfields.getByagelow()==0 && sfields.getBydatehigh()==null && sfields.getBydatelow()==null){
 	      		 final List<Customer> searching = customers.getCustomersbyName(currentEmployee.getId(), sfields.getByname());
-	      		 paginationSearch(model, searching, start, sfields, 2, 1);
+	      		 return paginationSearch(currentEmployee, searching, start, sfields, 2, 1);
 	      	 }
 	      	 else if(sfields.getByagehigh()!=0 && sfields.getByagelow()!=0 && sfields.getByname()==null && sfields.getBydatehigh()==null && sfields.getBydatelow()==null) {
 	      		 final List<Customer> searching = customers.getCustomersbyAge(currentEmployee.getId(), sfields.getByagehigh(), sfields.getByagelow());
-	      		 paginationSearch(model, searching, start, sfields, 2, 2);
+	      		 return paginationSearch(currentEmployee, searching, start, sfields, 2, 2);
 	      	 }
 	      	 else if(sfields.getBydatehigh()!=null && sfields.getBydatelow()!=null && sfields.getByname()==null && sfields.getByagehigh()==0 && sfields.getByagelow()==0){
-	      		dates= timestampConverter(sfields.getBydatehigh(), sfields.getBydatelow());
+	      		final Timestamp[] dates= timestampConverter(sfields.getBydatehigh(), sfields.getBydatelow());
 	      		final Timestamp timehigh = dates[0];
 	      		final Timestamp timelow = dates[1];
-	      		model.addAttribute("timehigh", timehigh);
-	      		model.addAttribute("timelow", timelow);
 	      		final List<Customer> searching = customers.getCustomersbyDate(currentEmployee.getId(), timehigh, timelow);
-	      		paginationSearch(model, searching, start, sfields, 2, 3);
+	      		return paginationSearch(currentEmployee, searching, start, sfields, 2, 3);
 	      	 }
 	      	 else {
 	      		 final List<Customer> searching = customers.getCustomersbyNameAge(currentEmployee.getId(), sfields.getByname(), sfields.getByagehigh(), sfields.getByagelow());
-	      		 paginationSearch(model, searching, start,  sfields, 2, 4);
+	      		 return paginationSearch(currentEmployee, searching, start,  sfields, 2, 4);
 	      	 }
 	       }
-	    //return model;
+	    return new Object[0];
 	}
 	
 	
@@ -136,7 +85,7 @@ public class ServiceFacade {
 	public void deleteCustomers(final SearchFields sfields){
 		final String[] selectedCustomers = sfields.getCustomers();
 		for(int j=0;j<selectedCustomers.length;j++) {
-		   	final List<Customer> customersl = customers.getCustomersbyIDcustomer(Integer.parseInt(selectedCustomers[j]));
+		   	final List<Customer> customersl = customers.getCustomerbyId(Integer.parseInt(selectedCustomers[j]));
 		   	LOGGER.info("Customer with ID "+Integer.parseInt(selectedCustomers[j])+" selected");
 		if(customersl.isEmpty()) {
 			LOGGER.info("ERROR. Impossible search of customer's ID \n");		
@@ -162,6 +111,7 @@ public class ServiceFacade {
      */
 	public void updateCustomer(final Customer form){
 		
+		final Customer modifyCustomer = customers.getCustomerLogin(form.getUser()).get(0);
 	   	modifyCustomer.setUser(form.getUser());
 	   	modifyCustomer.setName(form.getName());
 	   	modifyCustomer.setAge(form.getAge());
@@ -178,6 +128,7 @@ public class ServiceFacade {
      */
 	public void updateCustomerInfo(final Customer form){
 		
+		final Customer currentCustomer = customers.getCustomerbyId(form.getId()).get(0);
 		currentCustomer.setUser(form.getUser());
 		currentCustomer.setName(form.getName());
 		currentCustomer.setAge(form.getAge());
@@ -192,30 +143,24 @@ public class ServiceFacade {
      * <p>
      * @param form data collected by the form
      */
-	public void updateEmployee(final Employee form){
-		
+	public Employee updateEmployee(final Employee form){
+		Employee currentEmployee;
+		List<Employee> employeeLog = employees.getEmployeebyId(form.getId());
+		if(employeeLog.isEmpty()){
+			employeeLog = employees.getEmployeeLogin(form.getUser());
+			if(employeeLog.isEmpty()){
+				return null;
+			}
+			currentEmployee = employeeLog.get(0);
+		}else{
+			currentEmployee = employeeLog.get(0);
+		}
 	   	currentEmployee.setUser(form.getUser());
 	   	currentEmployee.setName(form.getName());
 	   	currentEmployee.setRole(form.getRole());
 	   	employees.updateEmployee(currentEmployee);
 	   	
-	}
-	
-    /**
-     * modify the current employee data, used for test
-     * <p>
-     * @param form data collected by the form
-     * @param form current current test employee
-     */
-	public void updateEmployeeTest(final Employee form, final Employee current){
-		LOGGER.info("Form: "+form);
-		LOGGER.info("Current: "+current);
-		current.setId(form.getId());
-		current.setUser(form.getUser());
-		current.setPassword(form.getPassword());
-		current.setName(form.getName());
-		current.setRole(form.getRole());
-		employees.updateEmployee(current);
+	   	return employees.getEmployeeLogin(currentEmployee.getUser()).get(0);
 	}
 	
     /**
@@ -223,12 +168,12 @@ public class ServiceFacade {
      * <p>
      * @param customer data collected by the form
      */
-	public void createCustomer(final Customer customer) 
+	public void createCustomer(final Customer customer, final int idEmployee) 
 			throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		final Login log = new Login();
         customer.setPassword(log.returnedHash("0000"));
         customer.setCurrentdate(currentDate());
-        customer.setIdemployee(currentEmployee.getId());
+        customer.setIdemployee(idEmployee);
         customers.createCustomer(customer);
 	}
 	
@@ -276,7 +221,7 @@ public class ServiceFacade {
      * <p>
      * @param start search necessary in order to paginate
      */
-	public Object[] getCustomersbyID(final int start){
+	public Object[] getCustomersbyID(final int start, final Employee currentEmployee){
 		int maxElements = 2;
 		int pages;
 		LOGGER.info("Current Employee: "+currentEmployee.getName());	
@@ -306,13 +251,12 @@ public class ServiceFacade {
 	public Customer getCustomerDB(final SearchFields sfields){
 			
 		Customer customerDB;
-		final List<Customer> customersl= customers.getCustomersbyIDcustomer(Integer.parseInt(sfields.getCustomer()));
+		final List<Customer> customersl= customers.getCustomerbyId(Integer.parseInt(sfields.getCustomer()));
     	if(customersl.isEmpty()){	
     		LOGGER.info("ERROR. Impossible search of customer's ID \n");	
     		return null;
     	}else{
     		customerDB = customersl.get(0);
-    		modifyCustomer = customerDB;
     		LOGGER.info("Customer with ID "+Integer.parseInt(sfields.getCustomer())+" selected");
     		return customerDB;
     	}
@@ -326,25 +270,23 @@ public class ServiceFacade {
      */
 	public Employee getEmployeeLogin(final Login clogin) 
 			throws NoSuchAlgorithmException, UnsupportedEncodingException{
-		List<Employee> employeeLog = employees.getEmployeeLogin(clogin.getUser());
+		final List<Employee> employeeLog = employees.getEmployeeLogin(clogin.getUser());
 		LOGGER.info(employeeLog.toString());
 	   	if(employeeLog.isEmpty()){
-	   		LOGGER.info("Fallo al hacer login");
-	   		login=false;
+	   		LOGGER.info("Login fail");
 	   		return null;
 	   	}else{
-	   		currentEmployee=employeeLog.get(0);
+	   		LOGGER.info("User: "+employeeLog.get(0).getUser());
 	   	}
+	   	final Employee currentEmployee=employeeLog.get(0);
 	   	final String savedfailpass = clogin.getPassword();
 	   	clogin.setPassword(clogin.returnedHash(clogin.getPassword()));
 	   	if(clogin.getPassword().equals(currentEmployee.getPassword())){ 
-	   		login = true;
-	   		LOGGER.info("Login True");
+	   		LOGGER.info("Login Success");
 	   		return currentEmployee;
 	   	} else {
 	   		clogin.setPassword(savedfailpass);
-	   		login = false;
-	   		LOGGER.info("Login False");
+	   		LOGGER.info("Login Fail: wrong password");
 	   		return null;
 	   	}
 	   		//return currentEmployee;
@@ -386,22 +328,20 @@ public class ServiceFacade {
      */
 	public Customer getCustomerLogin(final Login clogin) 
 			throws NoSuchAlgorithmException, UnsupportedEncodingException{
-		List<Customer> customerLog = customers.getCustomerLogin(clogin.getUser());
+		final List<Customer> customerLog = customers.getCustomerLogin(clogin.getUser());
 	   	if(customerLog.isEmpty()){
 	   		LOGGER.info("Fallo al hacer login");
-	   		login=false;
 	   		return null; 		
 	   	}else{
-	   		currentCustomer=customerLog.get(0);
+	   		LOGGER.info("User: "+customerLog.get(0).getUser());	
 	   	}
+	   	final Customer currentCustomer=customerLog.get(0);
 	   	final String savedfailpass = clogin.getPassword();
 	   	clogin.setPassword(clogin.returnedHash(clogin.getPassword()));
 	   	if(clogin.getPassword().equals(currentCustomer.getPassword())){
-	   		login = true;
 	   		return currentCustomer;
 	   	} else {
 	   		clogin.setPassword(savedfailpass);
-	   		login = false;
 	   		return null;
 	   	}
 
@@ -440,14 +380,15 @@ public class ServiceFacade {
      * Necessary for search pagination 
      * <p>
      * @param model necessary in order to update data from/to the jsp page
+     * @param currentEmployee necessary for query
      * @param searching result to be listed
      * @param start necessary for pagination
      * @param sfields search parameters
      * @param numregist number of registers to be listed by page
      * @param type necessary for switch function
      */
-	public void paginationSearch(final Model model, final List<Customer> searching, final int start, 
-								 final SearchFields sfields, final int numregist, final int type){
+	public Object[] paginationSearch(final Employee currentEmployee, final List<Customer> searching, 
+								 final int start, final SearchFields sfields, final int numregist, final int type){
 	  	 final int num = searching.size();
 	  	 int pages;
 	  	 if(num%numregist == 0){
@@ -461,23 +402,33 @@ public class ServiceFacade {
 	  	 }else{	 
 	  		 ncustomers=0;  		 
 	  	 }
-	  	 model.addAttribute("start", start);
-	  	 model.addAttribute("pages", pages);
-	  	 model.addAttribute("ncustomers",ncustomers);
+	  	 int[] pagParams = new int [3];
+	  	 pagParams[0] = start;
+	  	 pagParams[1] = pages;
+	  	 pagParams[2] = ncustomers;
+	  	 Object[] array = new Object[2];
+	  	 array[0] = pagParams; 
+
 	  	 if(!searching.isEmpty()){
 	  		 switch(type){
-	  		 case 1:  final List<Customer> listing = customers.getCustomersbyNameLimit(currentEmployee.getId(), sfields.getByname(), numregist*(start-1), numregist);
-	  		 		  model.addAttribute("listing",listing); break;
-	  		 case 2: final List<Customer> listing2 = customers.getCustomersbyAgeLimit(currentEmployee.getId(), sfields.getByagehigh(), sfields.getByagelow(), numregist*(start-1), numregist);
-	  		 		 model.addAttribute("listing",listing2); break;
-	  		 case 3: final Timestamp timehigh = dates[0];
+	  		 case 1: array[1] = customers.getCustomersbyNameLimit(currentEmployee.getId(), sfields.getByname(), numregist*(start-1), numregist);
+	  		 		 return array;
+	  		 		 //model.addAttribute("listing",listing); break;
+	  		 case 2: array[1] = customers.getCustomersbyAgeLimit(currentEmployee.getId(), sfields.getByagehigh(), sfields.getByagelow(), numregist*(start-1), numregist);
+	  		 		 return array;
+	  		 		 //model.addAttribute("listing",listing2); break;
+	  		 case 3: final Timestamp[] dates = this.timestampConverter(sfields.getBydatehigh(), sfields.getBydatelow());
+	  			 	 final Timestamp timehigh = dates[0];
 	  		 		 final Timestamp timelow = dates[1];
-	  			 	 final List<Customer> listing3 = customers.getCustomersbyDateLimit(currentEmployee.getId(),timehigh, timelow, numregist*(start-1), numregist);
-	   		 		 model.addAttribute("listing",listing3); break;
-	  		 case 4: final List<Customer> listing4 = customers.getCustomersbyNameAgeLimit(currentEmployee.getId(), sfields.getByname(), sfields.getByagehigh(), sfields.getByagelow(), numregist*(start-1), numregist);
-	  		 		 model.addAttribute("listing",listing4); break;	 
+	  		 		 array[1] = customers.getCustomersbyDateLimit(currentEmployee.getId(),timehigh, timelow, numregist*(start-1), numregist);
+	  		 		 return array;
+	   		 		 //model.addAttribute("listing",listing3); break;
+	  		 case 4: array[1] = customers.getCustomersbyNameAgeLimit(currentEmployee.getId(), sfields.getByname(), sfields.getByagehigh(), sfields.getByagelow(), numregist*(start-1), numregist);
+	  		 		 return array;
+	  		 		 //model.addAttribute("listing",listing4); break;	 
 	  		 }
 	  	  }
+	  	  return new Object[0];
 	   }
 
 }

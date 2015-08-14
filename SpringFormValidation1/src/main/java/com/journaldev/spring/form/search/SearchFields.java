@@ -142,7 +142,7 @@ public class SearchFields {
 	 * Setter for customers
 	 * <p>
 	 */
-	public void setCustomers(final String[] customers) {
+	public void setCustomers(final String... customers) {
 		this.customers = customers;
 	}
 	

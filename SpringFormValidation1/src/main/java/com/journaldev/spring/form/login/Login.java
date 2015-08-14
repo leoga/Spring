@@ -22,14 +22,25 @@ public class Login {
 	 */
 	private String password;
 	
-	public Login(String user, String password) {
+	/**
+	 * Login constructor
+	 * <p>
+	 */
+	public Login(final String user, final String password) {
 		this.user = user;
 		this.password = password;
 		// TODO Auto-generated constructor stub
 	}
 	
+	/**
+	 * Empty constructor
+	 * <p>
+	 */
 	public Login(){
-		
+		/**
+		 * Empty constructor
+		 * <p>
+		 */
 	}
 
 	/**

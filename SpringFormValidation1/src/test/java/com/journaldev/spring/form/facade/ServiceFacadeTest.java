@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -66,63 +67,53 @@ public class ServiceFacadeTest {
 	final Employee employee = new Employee(100, "test", "Developer", "test", "0000");
 
     /**
-     * Test which create and recover a existing employee, SUCCESS
+     * Test which create and recover a existing employee
      * <p>
      */
 	@Test
 	public void testCrearyRecuperarEmployee() throws NoSuchAlgorithmException, UnsupportedEncodingException {
 		LOGGER.info("Empezando testCrearyRecuperarEmployee");
-		facade.addEmployee(employee);
 		final Login test = new Login("test", "0000");
 		assertNotNull(facade.getEmployeebyUser(test.getUser()));
 	}
 	
     /**
-     * Test which recover a non-existent Employee, FAIL
+     * Test which recover a non-existent Employee
      * <p>
      */
 	@Test
 	public void testRecuperarEmployeeInexistente() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		LOGGER.info("Empezando testRecuperarEmployeeInexistente");
 		final Login test = new Login("fail", "0000");
-		facade.addEmployee(employee);
-		assertNotNull("Recuperar inexistente", facade.getEmployeebyUser(test.getUser()));
+		assertNull("Recuperar inexistente", facade.getEmployeebyUser(test.getUser()));
 	}
 	
     /**
-     * Test which modifies a existent Employee, SUCCESS
+     * Test which modifies a existent Employee
      * <p>
      */
 	@Test
 	public void testModificarEmployeeExistente() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		LOGGER.info("Empezando testModificarEmployeeExistente");
 		final Login test = new Login("test", "0000");
-		facade.addEmployee(employee);
 		employee.setName("modifyTest");
-		final Employee current = facade.getEmployeebyUser(test.getUser()).get(0);
-		facade.updateEmployeeTest(employee, current);
+		facade.updateEmployee(employee);
 		assertTrue(facade.getEmployeebyUser(test.getUser()).get(0).getName().equals(employee.getName()));
-		
 	}
 	
     /**
-     * Test which modifies a non-existent Employee, FAIL
+     * Test which modifies a non-existent Employee
      * <p>
      */
 	@Test
 	public void testModificarEmployeeInexistente() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		LOGGER.info("Empezando testModificarEmployeeInexistente");
-		final Login test = new Login("fail", "0000");
-		facade.addEmployee(employee);
-		employee.setName("modifyTest");
-		assertNotNull("Modificar inexistente", facade.getEmployeebyUser(test.getUser()));
-		final Employee current = facade.getEmployeebyUser(test.getUser()).get(0);
-		facade.updateEmployeeTest(employee, current);
-
+		final Employee inex = new Employee(99999, "fail", "Developer", "fail", "0000");
+		assertNull("Modificar Employee inexistente", facade.updateEmployee(inex));
 	}
 	
     /**
-     * Test which recover a related customer, SUCCESS
+     * Test which recover a related customer
      * <p>
      */
 	@SuppressWarnings("unchecked")
@@ -131,11 +122,10 @@ public class ServiceFacadeTest {
 		LOGGER.info("Empezando testCrearyRecuperarCustomerAsociado");
 		final SearchFields sfields = new SearchFields();
 		sfields.setCustomer(String.valueOf(customer.getId()));
-		facade.addEmployee(employee);
 		final Login test = new Login("test", "0000");
-		facade.getEmployeeLogin(test);
-		facade.createCustomer(customer);
-		final Object[] array = facade.getCustomersbyID(1);
+		final Employee currentEmployee = facade.getEmployeeLogin(test);
+		facade.createCustomer(customer, currentEmployee.getId());
+		final Object[] array = facade.getCustomersbyID(1, currentEmployee);
 		final List<Customer> customerDB = (List<Customer>) array[1];
 		final Customer asociado = customerDB.get(0);
 		LOGGER.info("Asociado: "+asociado.getName());
@@ -144,110 +134,106 @@ public class ServiceFacadeTest {
 	
     /**
      * Test which recover a related customer
-     * the related employee does not exist, FAIL
+     * the related employee does not exist
      * <p>
      */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testRecuperarCustomerAsociadoEmployeeInexistente() throws NoSuchAlgorithmException, UnsupportedEncodingException {
 		LOGGER.info("Empezando testRecuperarCustomerAsociadoEmployeeInexistente");
 		final SearchFields sfields = new SearchFields();
 		sfields.setCustomer(String.valueOf(customer.getId()));
-		facade.addEmployee(employee);
-		final Login test = new Login("fail", "0000");
-		final Employee current = facade.getEmployeeLogin(test);
-		assertNotNull("Customer asociado a Employee inexistente", current);
-		/*facade.createCustomer(customer);
-		final Object[] Array = facade.getCustomersbyID(1);
-		final List<Customer> CustomerDB = (List<Customer>) Array[1];
-		final Customer asociado = CustomerDB.get(0);*/
+		final Employee inex = new Employee(99999, "fail", "Developer", "fail", "0000");
+		final Object[] array = facade.getCustomersbyID(1, inex);
+		final List<Customer> customerDB = (List<Customer>) array[1];
+		assertTrue("Customer asociado a Employee inexistente", customerDB.isEmpty());
 	}
 	
     /**
-     * Test which recover a existent customer, SUCCESS
+     * Test which recover a existent customer
      * <p>
      */
 	@Test
 	public void testRecuperarCustomerExistente() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		LOGGER.info("Empezando testRecuperarCustomerExistente");
-		facade.addEmployee(employee); //for After
 		facade.addCustomer(customer);
 		assertNotNull("Recuperar Customer Existente", facade.getCustomerbyUser(customer.getUser()));
 	}
 	
     /**
-     * Test which recover a non-existent customer, FAIL
+     * Test which recover a non-existent customer
      * <p>
      */
 	@Test
 	public void testRecuperarCustomerInexistente() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		LOGGER.info("Empezando testRecuperarCustomerInexistente");
-		final SearchFields sfields = new SearchFields();
-		sfields.setCustomer(String.valueOf(100));
-		facade.addEmployee(employee); // for After
-		facade.addCustomer(customer);
-		assertNotNull("Recuperar Customer inexistente", facade.getCustomerbyUser("fail"));
+		final Customer inex = new Customer(100, "inex", "hola@hola", 22, Customer.Gender.MALE, new Date(1988-04-04),"3216549870", "inex","0000");
+		assertNull("Recuperar Customer inexistente", facade.getCustomerbyUser(inex.getUser()));
 	}
 	
     /**
-     * Test for existent login, SUCCESS
+     * Test for existent login
      * <p>
      */
 	@Test
 	public void testLoginExistente() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		LOGGER.info("Empezando testLoginExistente");
-		facade.addEmployee(employee);
 		final Login test = new Login("test", "0000");
-		facade.getEmployeeLogin(test);
-		LOGGER.info("Login test: "+facade.isLogin());
-		assertTrue(facade.isLogin());
+		final Employee employeeTest = facade.getEmployeeLogin(test);
+		assertTrue(test.getUser().equals(employeeTest.getUser()));
 	}
 	
     /**
-     * Test for non-existent login, FAIL
+     * Test for non-existent login
      * <p>
      */
 	@Test
 	public void testLoginInexistente() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		LOGGER.info("Empezando testLoginInexistente");
-		facade.addEmployee(employee);
 		final Login test = new Login("fail", "0000");
-		facade.getEmployeeLogin(test);
-		assertTrue(facade.isLogin());
+		final Employee employeeTest = facade.getEmployeeLogin(test);
+		assertNull(employeeTest);
 	}
 	
     /**
-     * Test for existent login, wrong password, FAIL
+     * Test for existent login, wrong password
      * <p>
      */
 	@Test
 	public void testLoginContraseñaIncorrecta() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		LOGGER.info("Empezando testLoginContraseñaIncorrecta");
-		facade.addEmployee(employee);
 		final Login test = new Login("test", "fail");
-		facade.getEmployeeLogin(test);
-		assertTrue("Login contraseña incorrecta", facade.isLogin());
+		final Employee employeeTest = facade.getEmployeeLogin(test);
+		assertNull("Login contraseña incorrecta", employeeTest);
 	}
 	
     /**
-     * Test for search function, by name. SUCCESS
+     * Test for search function, by name
      * <p>
      */
 	@Test
 	public void testValidarBusqueda() throws NoSuchAlgorithmException, UnsupportedEncodingException{
 		
 		LOGGER.info("Empezando testValidarBusqueda");
-		facade.addEmployee(employee);
 		final Login test = new Login("test", "0000");
-		facade.getEmployeeLogin(test);
-		facade.createCustomer(customer);
+		final Employee currentEmployee = facade.getEmployeeLogin(test);
+		facade.createCustomer(customer, currentEmployee.getId());
 		final SearchFields sfields = new SearchFields();
 		sfields.setByname("hol");
-		final List<Customer> searching = customers.getCustomersbyName(facade.getCurrentEmployee().getId(), sfields.getByname());
+		final List<Customer> searching = customers.getCustomersbyName(currentEmployee.getId(), sfields.getByname());
 		final Customer customer = searching.get(0);
 		LOGGER.info("Customer Recuperado "+customer.getName());
-		assertNotNull(customer);
+		assertNotNull("Validar busqueda", customer);
 	}
 
+    /**
+     * Necessary for almost all the tests
+     * <p>
+     */
+	@Before
+	public void paraEjecutarAntes() throws NoSuchAlgorithmException, UnsupportedEncodingException{
+		facade.addEmployee(employee);
+	}
 	
     /**
      * In order to clean the DB

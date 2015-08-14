@@ -54,10 +54,18 @@ public class EmployeeService {
 		employeeDao.updateEmployee(update);
 	}
 	
+	/**
+	 * Call the same function in EmployeeDao
+	 * <p>
+	 */
 	public void deleteEmployee(final Employee employee) {
 		employeeDao.deleteEmployee(employee);
 	}
 	
+	/**
+	 * Call the same function in EmployeeDao
+	 * <p>
+	 */
 	public List<Employee> getEmployeebyId(int id){
 		return employeeDao.getEmployeebyId(id);
 	}

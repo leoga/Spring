@@ -77,16 +77,16 @@ public class CustomerService {
 	  * @param idEmployee the id of the related employee
 	  */
 	public List<Customer> getCustomersbyID(final int idEmployee){
-		return customerDAO.getCustomersbyID(idEmployee);
+		return customerDAO.getCustomersbyId(idEmployee);
 	}
 	
 	 /**
-	  * Get a customer by its Id
+	  * Get customer by its id
 	  * <p>
 	  * @param idCustomer customer's id
 	  */
-	public List<Customer> getCustomersbyIDcustomer(final int idCustomer) {
-		return customerDAO.getCustomersbyIDcustomer(idCustomer);
+	public List<Customer> getCustomerbyId(final int idCustomer){
+		return customerDAO.getCustomerbyId(idCustomer);
 	}
 	
 	 /**

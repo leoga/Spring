@@ -92,7 +92,7 @@ public class CustomerDao {
 	  * @param idEmployee the id of the related employee
 	  */
 	 @SuppressWarnings("unchecked")
-	 public List<Customer> getCustomersbyID(final int idEmployee) {
+	 public List<Customer> getCustomersbyId(final int idEmployee) {
 	 return sessionFactory.getCurrentSession()
 	  .createQuery("FROM Customer c WHERE idemployee=:ID")
 	  .setInteger("ID", idEmployee)
@@ -105,12 +105,15 @@ public class CustomerDao {
 	  * @param idCustomer customer's id
 	  */
 	 @SuppressWarnings("unchecked")
-	 public List<Customer> getCustomersbyIDcustomer(final int idCustomer) {
+	 public List<Customer> getCustomerbyId(final int idCustomer) {
 	 return sessionFactory.getCurrentSession()
 	  .createQuery("FROM Customer c WHERE id=:ID")
 	  .setInteger("ID", idCustomer)
 	  .list();
 	 }
+	 
+
+
 	 
 	 /**
 	  * Get a list of customers by its name

@@ -6,9 +6,8 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
- 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
- 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,18 +112,20 @@ public class CustomerController {
 	 * @param model necessary in order to update data from/to jsp page
 	 */
     @RequestMapping(value = {"/loginCust.do","/cust/loginCust.do"}, method = RequestMethod.POST)
-    public String getCustomerPost(@ModelAttribute("employeeLogin") final Login login, Model model) throws NoSuchAlgorithmException, UnsupportedEncodingException{
+    public String getCustomerPost(@ModelAttribute("employeeLogin") final Login login, final Model model, final HttpSession session) throws NoSuchAlgorithmException, UnsupportedEncodingException{
 
     //LOGGER.info("login: "+login.getUser());
-   	facade.getCustomerLogin(login);
+    final Customer user = facade.getCustomerLogin(login);
    	
-   	if(facade.isLogin()==true){
-   		currentCustomer = facade.getCurrentCustomer();
-   		model.addAttribute("customerDB", currentCustomer);  
-   		return "customerPage";
-   	}else{
+   	if (null == user) { 
+   		// fallo auth
    		return "redirect:loginCust";
+   	} else {
+   		session.setAttribute("currentUser", user);
+   		model.addAttribute("customerDB", user);
+   		return "customerPage";
    	}
+   	
  }  
     
 	/**
@@ -179,32 +180,37 @@ public class CustomerController {
 @InitBinder
 public void binderC(final WebDataBinder binder) {
 	 binder.registerCustomEditor(Date.class, new PropertyEditorSupport() {
-			/**
-			* Set format "dd/MM/yyyy" to the introduced dates
-			* <p>
-			*/
-		    public void setAsText(final String value) {
-		            try {
-						setValue(new SimpleDateFormat("yyyy-MM-dd").parse(value));
-					} catch (ParseException e) {
-						//e.printStackTrace();
-						LOGGER.info(e.getMessage());
-						setValue(null);
-					}
+		 
+		/**
+		* Default locale
+		*/
+		Locale locale = Locale.getDefault();
+		/**
+		* Set format "dd/MM/yyyy" to the introduced dates
+		* <p>
+		*/
+		public void setAsText(final String value) {
+			try {
+				setValue(new SimpleDateFormat("yyyy-MM-dd", locale).parse(value));
+			} catch (ParseException e) {
+				//e.printStackTrace();
+				LOGGER.info(e.getMessage());
+				setValue(null);
+			}
 		    
+		}
+		/**
+		* Set format "dd/MM/yyyy" to the introduced dates
+		* <p>
+		*/
+		public String getAsText() {
+			if (getValue()==null){
+		    return "";	
+		}
+		 else{
+			 return new SimpleDateFormat("dd/MM/yyyy", locale).format((Date) getValue());
 		    }
-		    /**
-		    * Set format "dd/MM/yyyy" to the introduced dates
-		    * <p>
-		    */
-		    public String getAsText() {
-		    	if (getValue()==null){
-		    		return "";	
-		    	}
-		    	else{
-		    		return new SimpleDateFormat("dd/MM/yyyy").format((Date) getValue());
-		    	}
-		    }        
+		}        
 
 		});
 	}
